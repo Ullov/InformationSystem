@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>qml/QmlIncludes/KawaiButton.qml</file>
+        <file>qml/QmlIncludes/KawaiDownloadBar.qml</file>
+        <file>qml/QmlIncludes/KawaiHorisontalLine.qml</file>
+        <file>qml/QmlIncludes/KawaiLabelInputFieldCombination.qml</file>
+        <file>qml/QmlIncludes/KawaiLoadTabButton.qml</file>
+        <file>qml/QmlIncludes/KawaiSwitchableWindows.qml</file>
+        <file>qml/QmlIncludes/KawaiVerticalLine.qml</file>
+        <file>qml/StatisticWindow.qml</file>
+        <file>js/Tools.js</file>
+        <file>resources/other/cacert.pem</file>
+    </qresource>
+</RCC>
