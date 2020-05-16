@@ -18,12 +18,6 @@ public:
 
     void extractInfo();
 
-private:
-    //QEventLoop *netLoop;
-    QNetworkAccessManager *netManager;
-
-    void get(const QString &url);
-
 signals:
     void infoExtracted(const QJsonObject &info);
 };
