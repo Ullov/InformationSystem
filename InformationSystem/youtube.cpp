@@ -55,7 +55,7 @@ void YouTube::extractInfo()
         commentsJsons.append(KTools::Converter::convert<QString, QJsonObject>(data));
     }
 
-    QJsonArray result;
+    //QJsonArray result;
     for (int i = 0; i < videosParams.size(); i++)
     {
         QJsonArray commsArr = commentsJsons[i].value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("contents").toArray();
@@ -82,4 +82,5 @@ void YouTube::extractInfo()
 
     //cc->unsetErrFile();
     QString nope;
+    emit infoExtracted(result);
 }

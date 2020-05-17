@@ -12,14 +12,18 @@ class InterfaceForQml : public QObject
 public:
     InterfaceForQml();
 
+    YouTube *api;
+    QJsonObject *par;
+    InterfaceForQml *obj;
+    QJsonArray *result;
+    QFutureWatcher<QJsonArray> futWat;
+
 public slots:
+    void sendResult(QJsonArray data);
     void getData(const QJsonObject &params);
 
-private slots:
-    void sendResult(const QJsonObject &params);
-
 signals:
-    void result(const QJsonObject &data);
+    void ytData(const QJsonArray &data);
 };
 
 #endif // INTERFACEFORQML_H

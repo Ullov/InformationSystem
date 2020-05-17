@@ -14,12 +14,13 @@ public:
     YouTube();
 
     QJsonObject params;
-    QJsonObject result;
+    QJsonArray result;
 
+public slots:
     void extractInfo();
 
 signals:
-    void infoExtracted(const QJsonObject &info);
+    void infoExtracted(QJsonArray info);
 };
 
 #endif // YOUTUBE_H
