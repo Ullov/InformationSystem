@@ -20,6 +20,7 @@ void YouTube::extractInfo()
     QByteArray data = cc->request(params.value("url").toString() + "/videos");
     KTools::HtmlAst::Object htmlObj = KTools::HtmlAst::Object();
     htmlObj.makeAst(data);
+    QString channelTitle = htmlObj.arrsAndObjs.objects[3].value("header").toObject().value("c4TabbedHeaderRender").toObject().value("title").toString();
     QString xsrfToken = QUrl::toPercentEncoding(htmlObj.arrsAndObjs.objects[0].value("XSRF_TOKEN").toString());;
     commentsChunk["X-YouTube-Client-Version"] = htmlObj.arrsAndObjs.objects[0].value("INNERTUBE_CONTEXT_CLIENT_VERSION").toString();
     commentsChunk["X-YouTube-Client-Name"] = htmlObj.arrsAndObjs.objects[0].value("INNERTUBE_CONTEXT_CLIENT_NAME").toVariant().toString();
@@ -55,32 +56,45 @@ void YouTube::extractInfo()
         commentsJsons.append(KTools::Converter::convert<QString, QJsonObject>(data));
     }
 
-    //QJsonArray result;
     for (int i = 0; i < videosParams.size(); i++)
     {
-        QJsonArray commsArr = commentsJsons[i].value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("contents").toArray();
+        QJsonObject currComments = commentsJsons[i];
         QJsonArray midResult;
-        for (int j = 0; j < commsArr.size(); j++)
+        bool more = true;
+        while (more)
         {
-            QJsonObject tmp;
-            QJsonObject item = commsArr[j].toObject().value("commentThreadRenderer").toObject().value("comment").toObject().value("commentRenderer").toObject();
-            tmp["likes"] = item.value("likeCount");
-            tmp["replies"] = item.value("replyCount");
-            QJsonArray textTmp = item.value("contentText").toObject().value("runs").toArray();
-            QString fullText = "";
-            for (int k = 0; k < textTmp.size(); k++)
+            QJsonArray commsArr = currComments.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("contents").toArray();
+            for (int j = 0; j < commsArr.size(); j++)
             {
-                fullText += textTmp[k].toObject().value("text").toString();
+                QJsonObject tmp;
+                QJsonObject item = commsArr[j].toObject().value("commentThreadRenderer").toObject().value("comment").toObject().value("commentRenderer").toObject();
+                tmp["likes"] = item.value("likeCount");
+                tmp["replies"] = item.value("replyCount");
+                QJsonArray textTmp = item.value("contentText").toObject().value("runs").toArray();
+                QString fullText = "";
+                for (int k = 0; k < textTmp.size(); k++)
+                {
+                    fullText += textTmp[k].toObject().value("text").toString();
+                }
+                tmp["text"] = fullText;
+                tmp["opName"] = item.value("authorText").toObject().value("simpleText");
+                tmp["opId"] = item.value("authorEndpoint").toObject().value("browseEndpoint").toObject().value("browseId");
+                midResult.append(tmp);
             }
-            tmp["text"] = fullText;
-            tmp["opName"] = item.value("authorText").toObject().value("simpleText");
-            tmp["opId"] = item.value("authorEndpoint").toObject().value("browseEndpoint").toObject().value("browseId");
-            midResult.append(tmp);
+            if (currComments.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().contains("continuations") || midResult.size() < 50)
+            {
+                cc->setHeader(commentsChunk);
+                cc->setOptions();
+                QString cont = currComments.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("continuations").toArray()[0].toObject().value("nextContinuationData").toObject().value("continuation").toString();
+                QString trackParam = currComments.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("continuations").toArray()[0].toObject().value("nextContinuationData").toObject().value("clickTrackingParams").toString();
+                data = cc->request("https://www.youtube.com/comment_service_ajax?action_get_comments=1&pbj=1&ctoken=" + cont  + "&continuation=" + cont + "&itct=" + trackParam);
+                currComments = KTools::Converter::convert<QString, QJsonObject>(data);
+            }
+            else
+                more = false;
         }
         result.append(midResult);
     }
 
-    //cc->unsetErrFile();
-    QString nope;
     emit infoExtracted(result);
 }
