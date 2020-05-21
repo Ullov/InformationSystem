@@ -32,6 +32,7 @@ Window {
             inter.getData({url: addressInput.klifcTextField.text})
             resultText.text = "Идёт обработка данных"
             videosListModel.clear()
+            keywordsCounter = {}
         }
     }
     ScrollView{
@@ -106,7 +107,7 @@ Window {
             var keys = Object.keys(keywordsCounter)
             for (var i = 0; keys[i]; i++)
             {
-                str += keys[i] + "\t" + keywordsCounter[keys[i]] + "\n"
+                str += keys[i] + "\t\t" + keywordsCounter[keys[i]] + "\n"
             }
             resultText.text = str
         }

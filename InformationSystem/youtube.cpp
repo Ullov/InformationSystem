@@ -16,6 +16,7 @@ void YouTube::extractInfo()
     };
     QString dir = KTools::Options::configPath + "/tmp";
     cc->currHeaderMode = KTools::Enums::Curl::HeaderMode::None;
+    cc->currCookieMode = KTools::Enums::Curl::CookieMode::GetAllTimes;
     cc->cookieFileName = "cookieYoutube.txt";
     cc->cookiePath = KTools::Options::configPath;
     cc->setOptions();
@@ -33,7 +34,12 @@ void YouTube::extractInfo()
         videosId.append(videosInfo[i].toObject().value("gridVideoRenderer").toObject().value("videoId").toString());
     }
 
-    //QVector<QMap<QString, QString>> videosParams;
+    cc->restartSession();
+    cc->currHeaderMode = KTools::Enums::Curl::HeaderMode::None;
+    cc->currCookieMode = KTools::Enums::Curl::CookieMode::GetAllTimes;
+    cc->cookieFileName = "cookieYoutube.txt";
+    cc->setCookie();
+    cc->setOptions();
     KTools::Curl *cc2 = new KTools::Curl();
     cc2->setRequestType(KTools::Enums::Curl::RequestType::Post);
     cc2->currHeaderMode = KTools::Enums::Curl::HeaderMode::Custom;
