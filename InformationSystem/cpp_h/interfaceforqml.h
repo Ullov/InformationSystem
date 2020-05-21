@@ -21,9 +21,11 @@ public:
 public slots:
     void sendResult(QJsonArray data);
     void getData(const QJsonObject &params);
+    void sendSingleResult(QJsonObject data);
 
 signals:
     void ytData(const QJsonArray &data);
+    void singleData(const QJsonObject data);
 };
 
 #endif // INTERFACEFORQML_H

@@ -21,6 +21,7 @@ public slots:
 
 signals:
     void infoExtracted(QJsonArray info);
+    void singleInfo(QJsonObject info);
 };
 
 #endif // YOUTUBE_H

@@ -58,43 +58,57 @@ void YouTube::extractInfo()
 
     for (int i = 0; i < videosParams.size(); i++)
     {
-        QJsonObject currComments = commentsJsons[i];
         QJsonArray midResult;
-        bool more = true;
-        while (more)
+        QJsonArray commsArr = commentsJsons[i].value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("contents").toArray();
+        for (int j = 0; j < commsArr.size(); j++)
         {
-            QJsonArray commsArr = currComments.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("contents").toArray();
-            for (int j = 0; j < commsArr.size(); j++)
+            QJsonObject tmp;
+            QJsonObject item = commsArr[j].toObject().value("commentThreadRenderer").toObject().value("comment").toObject().value("commentRenderer").toObject();
+            tmp["likes"] = item.value("likeCount");
+            tmp["replies"] = item.value("replyCount");
+            QJsonArray textTmp = item.value("contentText").toObject().value("runs").toArray();
+            QString fullText = "";
+            for (int k = 0; k < textTmp.size(); k++)
             {
-                QJsonObject tmp;
-                QJsonObject item = commsArr[j].toObject().value("commentThreadRenderer").toObject().value("comment").toObject().value("commentRenderer").toObject();
-                tmp["likes"] = item.value("likeCount");
-                tmp["replies"] = item.value("replyCount");
-                QJsonArray textTmp = item.value("contentText").toObject().value("runs").toArray();
-                QString fullText = "";
-                for (int k = 0; k < textTmp.size(); k++)
-                {
-                    fullText += textTmp[k].toObject().value("text").toString();
-                }
-                tmp["text"] = fullText;
-                tmp["opName"] = item.value("authorText").toObject().value("simpleText");
-                tmp["opId"] = item.value("authorEndpoint").toObject().value("browseEndpoint").toObject().value("browseId");
-                midResult.append(tmp);
+                fullText += textTmp[k].toObject().value("text").toString();
             }
-            if (currComments.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().contains("continuations") || midResult.size() < 50)
-            {
-                cc->setHeader(commentsChunk);
-                cc->setOptions();
-                QString cont = currComments.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("continuations").toArray()[0].toObject().value("nextContinuationData").toObject().value("continuation").toString();
-                QString trackParam = currComments.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("continuations").toArray()[0].toObject().value("nextContinuationData").toObject().value("clickTrackingParams").toString();
-                data = cc->request("https://www.youtube.com/comment_service_ajax?action_get_comments=1&pbj=1&ctoken=" + cont  + "&continuation=" + cont + "&itct=" + trackParam);
-                currComments = KTools::Converter::convert<QString, QJsonObject>(data);
-            }
-            else
-                more = false;
+            tmp["text"] = fullText;
+            tmp["opName"] = item.value("authorText").toObject().value("simpleText");
+            tmp["opId"] = item.value("authorEndpoint").toObject().value("browseEndpoint").toObject().value("browseId");
+            midResult.append(tmp);
         }
         result.append(midResult);
+        QJsonObject singleResObj;
+        singleResObj["comments"] = midResult;
+
+
+        KTools::File::writeFile(videosParams[i]["data"].toUtf8(), dir, "videoHtml.txt");
+        QVector<QVector<QVector<QString>>> regexResult;
+        QVector<QString> patterns = {
+            {R"raw(\\"title\\":\\"([^"]+)")raw"}, // title
+            {R"raw(,\\"lengthSeconds\\":\\"([^"]+)",)raw"}, // lenght
+            {R"raw(,\\"keywords\\":(\[[^]]+\]))raw"}, // keywords
+            {R"raw("tooltip":"([^ ]+) \/ ([^"]+)"}})raw"} // likes and dislikes
+        };
+        KTools::ExForString::executeRegex(videosParams[i]["data"], patterns, regexResult);
+        singleResObj["title"] = regexResult[0][0][1].replace("\\", "");
+        singleResObj["length"] = regexResult[1][0][1].replace("\\", "");
+        singleResObj["keywords"] = KTools::Converter::convert<QString, QJsonArray>(regexResult[2][0][1].replace("\\", ""));
+        singleResObj["likes"] = regexResult[3][0][1];
+        singleResObj["dislikes"] = regexResult[3][0][2];
+        emit singleInfo(singleResObj);
+
+        QString nope;
     }
 
     emit infoExtracted(result);
 }
+// \\"title\\":\\"([^"]+)",\\"lengthSeconds\\":\\"([^"]+)",\\"keywords\\":(\[[^]]+\])
+// "dislike this video along with ([\d,]+) other people"
+// "like this video along with ([\d,]+) other people"
+// "likeStatus":"LIKE","tooltip":"([^ ]+) \/ ([^"]+)"
+// "likeStatus":"LIKE","tooltip":"([^"]+)"
+// "tooltip":"([^ ]+) \/ ([^"]+)"}},"superTitleLink"
+// "tooltip":"([^ ]+) \/ ([^"]+)"}}
+// \\"title\\":\\"([^"]+)"
+// ,\\"lengthSeconds\\":\\"([^"]+)",

@@ -11,5 +11,6 @@
         <file>qml/StatisticWindow.qml</file>
         <file>js/Tools.js</file>
         <file>resources/other/cacert.pem</file>
+        <file>qml/InfoAboutVideo.qml</file>
     </qresource>
 </RCC>
