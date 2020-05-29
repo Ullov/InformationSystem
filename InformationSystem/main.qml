@@ -9,9 +9,7 @@ Window {
     width: 800
     height: 500
     title: qsTr("Information system")
-    //visibility: "Maximized"
 
-    //Component.onCompleted: inter.getData({url: "https://www.youtube.com/channel/UCrG8mytOLrC_t5vu7To4ajA"})
     KawaiLabelInputFieldCombination {
         id: addressInput
         anchors.left: parent.left
@@ -21,7 +19,6 @@ Window {
         klifcLabel.text: "Название видео"
         klifcLabel.font.family: "Segoe UI"
         klifcTextField.font.family: "Segoe UI"
-        //klifcTextField.placeholderText: "Введи адрес канала"
     }
     KawaiButton {
         id: submitButton
@@ -33,7 +30,6 @@ Window {
         onClicked: {
             inter.getData({url: addressInput.klifcTextField.text})
             resultText.text = "Идёт обработка данных"
-            //videosListModel.clear()
             keywordsCounter = {}
         }
     }
@@ -59,7 +55,6 @@ Window {
         }
     }
 
-
     property var keywordsCounter: ({})
     Connections {
         target: inter
@@ -72,8 +67,6 @@ Window {
             }
         }
         onSingleData: {
-            //videosListModel.append({inf: data})
-            //data["keywords"]
             for (var i = 0; data["keywords"][i]; i++)
             {
                 if (keywordsCounter[data["keywords"][i]])
