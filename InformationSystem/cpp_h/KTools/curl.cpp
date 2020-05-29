@@ -27,7 +27,7 @@ KTools::Curl::~Curl()
     }
     if (cookies)
     {
-        curl_slist_free_all(cookies);
+        //curl_slist_free_all(cookies);
     }
 }
 

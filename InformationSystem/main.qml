@@ -6,10 +6,10 @@ import "qml"
 
 Window {
     visible: true
-    width: 640
-    height: 480
+    width: 800
+    height: 500
     title: qsTr("Information system")
-    visibility: "Maximized"
+    //visibility: "Maximized"
 
     //Component.onCompleted: inter.getData({url: "https://www.youtube.com/channel/UCrG8mytOLrC_t5vu7To4ajA"})
     KawaiLabelInputFieldCombination {
@@ -18,69 +18,47 @@ Window {
         anchors.right: submitButton.left
         anchors.top: parent.top
         anchors.margins: 5
-        klifcLabel.text: "Адрес канала"
+        klifcLabel.text: "Название видео"
         klifcLabel.font.family: "Segoe UI"
         klifcTextField.font.family: "Segoe UI"
-        klifcTextField.placeholderText: "Введи адрес канала"
+        //klifcTextField.placeholderText: "Введи адрес канала"
     }
     KawaiButton {
         id: submitButton
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 5
+        labelText: "Найти ключевые слова"
+        widthC: 150
         onClicked: {
             inter.getData({url: addressInput.klifcTextField.text})
             resultText.text = "Идёт обработка данных"
-            videosListModel.clear()
+            //videosListModel.clear()
             keywordsCounter = {}
         }
     }
-    ScrollView{
-        id: resultScroll
+    Rectangle {
         anchors.top: addressInput.bottom
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-        anchors.margins: 5
-        width: 300
-        TextArea {
-            id: resultText
-            wrapMode: TextArea.WordWrap
-            font.family: "Segoe UI"
-            readOnly: true
-        }
-
-    }
-    ListView {
-        id: videosListView
         anchors.left: parent.left
-        anchors.right: resultScroll.left
-        anchors.top: addressInput.bottom
-        anchors.bottom: parent.bottom
-        anchors.margins: 10
-        model: videosListModel
-        delegate: videosDelegate
-        clip: true
-        ScrollBar.vertical: ScrollBar {
-            id: scrollBarItem
-            policy: ScrollBar.AlwaysOn
+        anchors.margins: 25
+        border.color: "Black"
+        border.width: 2
+        radius: 2
+        ScrollView{
+            id: resultScroll
+            anchors.fill: parent
+            anchors.margins: 5
+            TextArea {
+                id: resultText
+                wrapMode: TextArea.WordWrap
+                font.family: "Segoe UI"
+                readOnly: true
+            }
         }
-        Keys.onUpPressed: scrollBarItem.decrease()
-        Keys.onDownPressed: scrollBarItem.increase()
-        spacing: 3
-    }
-    ListModel {
-        id: videosListModel
     }
 
-    Component {
-        id: videosDelegate
-        InfoAboutVideo {
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: 10
-            info: inf
-        }
-    }
 
     property var keywordsCounter: ({})
     Connections {
@@ -94,8 +72,8 @@ Window {
             }
         }
         onSingleData: {
-            videosListModel.append({inf: data})
-            data["keywords"]
+            //videosListModel.append({inf: data})
+            //data["keywords"]
             for (var i = 0; data["keywords"][i]; i++)
             {
                 if (keywordsCounter[data["keywords"][i]])
@@ -107,7 +85,9 @@ Window {
             var keys = Object.keys(keywordsCounter)
             for (var i = 0; keys[i]; i++)
             {
-                str += keys[i] + "\t\t" + keywordsCounter[keys[i]] + "\n"
+                str += keys[i]
+                if (keys[i + 1])
+                    str += ","
             }
             resultText.text = str
         }

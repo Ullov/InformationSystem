@@ -32,6 +32,7 @@ Button {
             text: labelText
             color: labelTextColor
             font.weight: labelTextWeight
+            font.family: "Segoe UI"
         }
     }
     states: [

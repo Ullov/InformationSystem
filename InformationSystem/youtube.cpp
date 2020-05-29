@@ -20,18 +20,23 @@ void YouTube::extractInfo()
     cc->cookieFileName = "cookieYoutube.txt";
     cc->cookiePath = KTools::Options::configPath;
     cc->setOptions();
-    QByteArray data = cc->request(params.value("url").toString() + "/videos");
+    QByteArray data = cc->request("https://www.youtube.com");
     KTools::HtmlAst::Object htmlObj = KTools::HtmlAst::Object();
     htmlObj.makeAst(data);
-    QString channelTitle = htmlObj.arrsAndObjs.objects[3].value("header").toObject().value("c4TabbedHeaderRender").toObject().value("title").toString();
+    //QString channelTitle = htmlObj.arrsAndObjs.objects[3].value("header").toObject().value("c4TabbedHeaderRender").toObject().value("title").toString();
     QString xsrfToken = QUrl::toPercentEncoding(htmlObj.arrsAndObjs.objects[0].value("XSRF_TOKEN").toString());;
     commentsChunk["X-YouTube-Client-Version"] = htmlObj.arrsAndObjs.objects[0].value("INNERTUBE_CONTEXT_CLIENT_VERSION").toString();
     commentsChunk["X-YouTube-Client-Name"] = htmlObj.arrsAndObjs.objects[0].value("INNERTUBE_CONTEXT_CLIENT_NAME").toVariant().toString();
-    QJsonArray videosInfo = htmlObj.arrsAndObjs.objects[3].value("contents").toObject().value("twoColumnBrowseResultsRenderer").toObject().value("tabs").toArray()[1].toObject().value("tabRenderer").toObject().value("content").toObject().value("sectionListRenderer").toObject().value("contents").toArray()[0].toObject().value("itemSectionRenderer").toObject().value("contents").toArray()[0].toObject().value("gridRenderer").toObject().value("items").toArray(); // line 45 "items":[...]
+    cc->currHeaderMode = KTools::Enums::Curl::HeaderMode::Custom;
+    cc->setHeader(commentsChunk);
+    cc->setOptions();
+    QJsonArray jsonArr = KTools::Converter::convert<QString, QJsonArray>(cc->request("https://www.youtube.com/results?search_query=" + QUrl::toPercentEncoding(params.value("url").toString()) + "&sp=EgIQAQ%253D%253D&pbj=1"));
+    QJsonArray videosInfo = jsonArr[1].toObject().value("response").toObject().value("contents").toObject().value("twoColumnSearchResultsRenderer").toObject().value("primaryContents").toObject().value("sectionListRenderer").toObject().value("contents").toArray()[0].toObject().value("itemSectionRenderer").toObject().value("contents").toArray();
     QVector<QString> videosId;
     for (int i = 0; i < videosInfo.size(); i++)
     {
-        videosId.append(videosInfo[i].toObject().value("gridVideoRenderer").toObject().value("videoId").toString());
+        if (!videosInfo[i].toObject().value("videoRenderer").isUndefined())
+            videosId.append(videosInfo[i].toObject().value("videoRenderer").toObject().value("videoId").toString());
     }
 
     cc->restartSession();
@@ -40,33 +45,33 @@ void YouTube::extractInfo()
     cc->cookieFileName = "cookieYoutube.txt";
     cc->setCookie();
     cc->setOptions();
-    KTools::Curl *cc2 = new KTools::Curl();
+    /*KTools::Curl *cc2 = new KTools::Curl();
     cc2->setRequestType(KTools::Enums::Curl::RequestType::Post);
     cc2->currHeaderMode = KTools::Enums::Curl::HeaderMode::Custom;
     cc2->currPostParam = "session_token=" + xsrfToken;
     cc2->cookieFileName = "cookieYoutube.txt";
-    cc2->setCookie();
+    cc2->setCookie();*/
     for (int i = 0; i < videosId.size(); i++)
     {
         data = cc->request("https://www.youtube.com/watch?v=" + videosId[i]);
         QVector<QVector<QVector<QString>>> regexResult;
-        KTools::ExForString::executeRegex(data, {{"([^\"]+___________[^\"]+)\",\"[^\"]+\":\"([^\"]+)"}}, regexResult);
+        //KTools::ExForString::executeRegex(data, {{"([^\"]+___________[^\"]+)\",\"[^\"]+\":\"([^\"]+)"}}, regexResult);
 
-        QString ctoken = QUrl::toPercentEncoding(regexResult[0][0][1]);
-        QString itct = QUrl::toPercentEncoding(regexResult[0][0][2]);
+        /*QString ctoken = QUrl::toPercentEncoding(regexResult[0][0][1]);
+        QString itct = QUrl::toPercentEncoding(regexResult[0][0][2]);*/
         QString videoHtmlPage = data;
 
         // ...
 
 
-        cc2->setHeader(commentsChunk);
+        /*cc2->setHeader(commentsChunk);
         cc2->setOptions();
         data = cc2->request("https://www.youtube.com/comment_service_ajax?action_get_comments=1&pbj=1&ctoken=" + ctoken  + "&continuation=" + ctoken + "&itct=" + itct);
-        QJsonObject commentsJsons = KTools::Converter::convert<QString, QJsonObject>(data);
+        QJsonObject commentsJsons = KTools::Converter::convert<QString, QJsonObject>(data);*/
 
         // ...
 
-        QJsonArray midResult;
+        /*QJsonArray midResult;
         QJsonArray commsArr = commentsJsons.value("response").toObject().value("continuationContents").toObject().value("itemSectionContinuation").toObject().value("contents").toArray();
         for (int j = 0; j < commsArr.size(); j++)
         {
@@ -85,31 +90,33 @@ void YouTube::extractInfo()
             tmp["opId"] = item.value("authorEndpoint").toObject().value("browseEndpoint").toObject().value("browseId");
             midResult.append(tmp);
         }
-        result.append(midResult);
+        result.append(midResult);*/
         QJsonObject singleResObj;
-        singleResObj["comments"] = midResult;
+        //singleResObj["comments"] = midResult;
 
 
-        KTools::File::writeFile(videoHtmlPage.toUtf8(), dir, "videoHtml.txt");
+        //KTools::File::writeFile(videoHtmlPage.toUtf8(), dir, "videoHtml.txt");
         regexResult = QVector<QVector<QVector<QString>>>();
         QVector<QString> patterns = {
-            {R"raw(\\"title\\":\\"([^"]+)")raw"}, // title
-            {R"raw(,\\"lengthSeconds\\":\\"([^"]+)",)raw"}, // lenght
+            //{R"raw(\\"title\\":\\"([^"]+)")raw"}, // title
+            //{R"raw(,\\"lengthSeconds\\":\\"([^"]+)",)raw"}, // lenght
             {R"raw(,\\"keywords\\":(\[[^]]+\]))raw"}, // keywords
-            {R"raw("tooltip":"([^ ]+) \/ ([^"]+)"}})raw"} // likes and dislikes
+            //{R"raw("tooltip":"([^ ]+) \/ ([^"]+)"}})raw"} // likes and dislikes
         };
         KTools::ExForString::executeRegex(videoHtmlPage, patterns, regexResult);
-        singleResObj["title"] = regexResult[0][0][1].replace("\\", "");
-        singleResObj["length"] = regexResult[1][0][1].replace("\\", "");
-        singleResObj["keywords"] = KTools::Converter::convert<QString, QJsonArray>(regexResult[2][0][1].replace("\\", ""));
-        singleResObj["likes"] = regexResult[3][0][1];
-        singleResObj["dislikes"] = regexResult[3][0][2];
+        //singleResObj["title"] = regexResult[0][0][1].replace("\\", "");
+        //singleResObj["length"] = regexResult[1][0][1].replace("\\", "");
+        if (regexResult[0].size() > 0)
+            singleResObj["keywords"] = KTools::Converter::convert<QString, QJsonArray>(regexResult[0][0][1].replace("\\", ""));
+        //singleResObj["keywords"] = KTools::Converter::convert<QString, QJsonArray>(regexResult[2][0][1].replace("\\", ""));
+        //singleResObj["likes"] = regexResult[3][0][1];
+        //singleResObj["dislikes"] = regexResult[3][0][2];
         emit singleInfo(singleResObj);
 
         QString nope;
     }
 
-    delete cc2;
+    //delete cc2;
     emit infoExtracted(result);
 }
 // \\"title\\":\\"([^"]+)",\\"lengthSeconds\\":\\"([^"]+)",\\"keywords\\":(\[[^]]+\])
