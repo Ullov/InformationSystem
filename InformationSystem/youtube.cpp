@@ -23,7 +23,6 @@ void YouTube::extractInfo()
     QByteArray data = cc->request("https://www.youtube.com");
     KTools::HtmlAst::Object htmlObj = KTools::HtmlAst::Object();
     htmlObj.makeAst(data);
-    //QString xsrfToken = QUrl::toPercentEncoding(htmlObj.arrsAndObjs.objects[0].value("XSRF_TOKEN").toString());;
     commentsChunk["X-YouTube-Client-Version"] = htmlObj.arrsAndObjs.objects[0].value("INNERTUBE_CONTEXT_CLIENT_VERSION").toString();
     commentsChunk["X-YouTube-Client-Name"] = htmlObj.arrsAndObjs.objects[0].value("INNERTUBE_CONTEXT_CLIENT_NAME").toVariant().toString();
     cc->currHeaderMode = KTools::Enums::Curl::HeaderMode::Custom;
@@ -51,7 +50,10 @@ void YouTube::extractInfo()
         KTools::ExForString::executeRegex(videoHtmlPage, patterns, regexResult);
         if (regexResult[0].size() > 0)
             singleResObj["keywords"] = KTools::Converter::convert<QString, QJsonArray>(regexResult[0][0][1].replace("\\", ""));
-
+        if (videosId.size() == i + 1)
+            singleResObj["last"] = true;
+        else
+            singleResObj["last"] = false;
         emit singleInfo(singleResObj);
 
         QString nope;

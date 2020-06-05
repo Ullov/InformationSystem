@@ -10,6 +10,17 @@ Window {
     height: 500
     title: qsTr("Information system")
 
+    TextArea {
+        id: infoText
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: addressInput.bottom
+        height: 40
+        font.family: "Segoe UI"
+        readOnly: true
+        selectByMouse: true
+    }
+
     KawaiLabelInputFieldCombination {
         id: addressInput
         anchors.left: parent.left
@@ -28,9 +39,21 @@ Window {
         labelText: "Найти ключевые слова"
         widthC: 150
         onClicked: {
-            inter.getData({url: addressInput.klifcTextField.text})
-            resultText.text = "Идёт обработка данных"
-            keywordsCounter = {}
+            if (addressInput.klifcTextField.text != "")
+            {
+                if (allDataPiecesHere)
+                {
+                    inter.getData({url: addressInput.klifcTextField.text})
+                    infoText.text = "Идёт обработка данных"
+                    resultText.text = ""
+                    lineByLineResultText.text = ""
+                    keywordsCounter = {}
+                }
+            }
+            else
+            {
+                infoText.text = "Пустой ввод неприемлем"
+            }
         }
     }
     Rectangle {
@@ -44,29 +67,51 @@ Window {
         radius: 2
         ScrollView{
             id: resultScroll
-            anchors.fill: parent
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: dividingLine.top
             anchors.margins: 5
             TextArea {
                 id: resultText
                 wrapMode: TextArea.WordWrap
                 font.family: "Segoe UI"
                 readOnly: true
+                selectByMouse: true
+            }
+        }
+        KawaiHorisontalLine {
+            id: dividingLine
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: parent.left
+            anchors.right: parent.right
+        }
+        ScrollView {
+            id: lineByLineResultScroll
+            anchors.top: dividingLine.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: 5
+            TextArea {
+                id: lineByLineResultText
+                wrapMode: TextArea.WordWrap
+                font.family: "Segoe UI"
+                readOnly: true
+                selectByMouse: true
             }
         }
     }
 
     property var keywordsCounter: ({})
+    property bool allDataPiecesHere: true
     Connections {
         target: inter
-        onYtData: {
-            resultText.text = "Данные проанализированы"
-            videosListModel.clear()
-            for (var i = 0; data[i]; i++)
-            {
-                videosListModel.append({inf: {info: data[i]}})
-            }
-        }
         onSingleData: {
+            allDataPiecesHere = data["last"]
+            if (data["last"])
+                infoText.text = ""
+
             for (var i = 0; data["keywords"][i]; i++)
             {
                 if (keywordsCounter[data["keywords"][i]])
@@ -75,14 +120,20 @@ Window {
                     keywordsCounter[data["keywords"][i]] = 1
             }
             var str = ""
+            var str2 = ""
             var keys = Object.keys(keywordsCounter)
             for (var i = 0; keys[i]; i++)
             {
                 str += keys[i]
+                str2 += keys[i]
                 if (keys[i + 1])
-                    str += ","
+                {
+                    str += ", "
+                    str2 += ",\n"
+                }
             }
             resultText.text = str
+            lineByLineResultText.text = str2
         }
     }
 }
