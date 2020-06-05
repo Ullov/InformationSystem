@@ -4,12 +4,6 @@
 #include "cpp_h/interfaceforqml.h"
 #include <curl/curl.h>
 
-void registerTypesForQml()
-{
-    qRegisterMetaType<QVector<QByteArray>>("VectorByteArray");
-    KTools::Enums::registerTypesForQml();
-}
-
 int main(int argc, char *argv[])
 {
     QTextCodec *codec = QTextCodec::codecForName("UTF-8");
@@ -19,7 +13,6 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    registerTypesForQml();
     curl_global_init(CURL_GLOBAL_ALL);
 
     QQmlApplicationEngine engine;

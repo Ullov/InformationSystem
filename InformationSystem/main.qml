@@ -2,7 +2,6 @@ import QtQuick 2.13
 import QtQuick.Window 2.13
 import QtQuick.Controls 2.2
 import "qml/QmlIncludes"
-import "qml"
 
 Window {
     visible: true

@@ -27,7 +27,6 @@ public:
     ~ParserClass();
 
     KTools::Curl *cc;
-    KTools::Enums::Parsers parserType;
 
 protected:
     // JSON
@@ -44,8 +43,6 @@ protected:
     void delay(const int &seconds);
     QVector<QJsonObject> extractJsonObjectFromText(const QString &text);
     QString defineExtension(const QByteArray &file);
-    void writeInfoLog(const QString &message);
-    void setParserType(const KTools::Enums::Parsers type);
     void endDownloadingFunction(const int parserMode, const QJsonObject &data = QJsonObject(), const QVector<QByteArray> &binaryContent = QVector<QByteArray>());
 
     // variables

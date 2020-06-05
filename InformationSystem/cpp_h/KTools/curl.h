@@ -39,7 +39,6 @@ namespace KTools
         void addHandle(const QString &handleName);
         void swichHandle (const QString &handleName);
 
-        KTools::Enums::Parsers downloaderType;
         KTools::Enums::Curl::CookieMode currCookieMode;
         KTools::Enums::Curl::HeaderMode currHeaderMode;
         KTools::Enums::Curl::RequestType currRequestType;

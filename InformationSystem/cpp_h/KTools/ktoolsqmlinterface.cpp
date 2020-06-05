@@ -21,8 +21,3 @@ void KToolsQmlInterface::optionsHandlerSlotSetParam(const QString pathToParam, c
 {
     KTools::Options::setParam(pathToParam, param);
 }
-
-void KToolsQmlInterface::curlSendProgress(const QList<double> list, const qint64 millisecondsFromStart, const KTools::Enums::Parsers downloaderType)
-{
-    emit obj->curlProgressSignal(list, millisecondsFromStart, downloaderType);
-}

@@ -97,7 +97,7 @@ int KTools::Curl::XFerInfoFunctionCallback(void *p, double dlTotal, double dlNow
         list.append(dlTotal);
         list.append(ulNow);
         list.append(ulTotal);
-        KToolsQmlInterface::curlSendProgress(list, fp->timer.elapsed(), fp->th->downloaderType);
+        //KToolsQmlInterface::curlSendProgress(list, fp->timer.elapsed(), fp->th->downloaderType);
         fp->lastDlNow = dlNow;
         fp->lastDlTotal = dlTotal;
         fp->lastUlTotal = ulTotal;
